@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config'
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ElasticsearchConfigModule } from './elasticsearch/elasticsearch.module';
+import { SearchModule } from './search/search.module';
 
 @Module({
   imports: [
@@ -9,6 +12,8 @@ import { AppService } from './app.service';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ElasticsearchConfigModule,
+    SearchModule
   ],
   controllers: [AppController],
   providers: [AppService],

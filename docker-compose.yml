@@ -10,10 +10,37 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      - ELASTICSEARCH_NODE=http://elasticsearch:9200
     env_file:
       - .env
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     command: npm run start:dev
+    depends_on:
+      - elasticsearch
+    networks:
+      - app-network
 
+  elasticsearch:
+    container_name: elasticsearch-dev
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  elasticsearch-data:
+    driver: local
