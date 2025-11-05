@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from "@nestjs/common";
+import { Injectable, InternalServerErrorException, OnModuleInit } from "@nestjs/common";
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 
 @Injectable()
@@ -7,8 +7,8 @@ export class CustomElasticsearchService implements OnModuleInit {
     constructor(private readonly esService: ElasticsearchService) { }
 
     async onModuleInit() {
-        await this.createIndexIfNotExists();
-        await this.seedSampleData();
+        // await this.createIndexIfNotExists();
+        // await this.seedSampleData();
 
     }
 
@@ -108,6 +108,71 @@ export class CustomElasticsearchService implements OnModuleInit {
                     name: text
                 }
             }
+        })
+    }
+
+    async createIndex(indexName: string) {
+
+        const result = await this.esService.indices.create({
+            index: indexName,
+            mappings: {
+                properties: {
+                    id: { type: 'text' },
+                    name: { type: 'text' },
+                    author: { type: 'text' },
+                    isbn: { type: 'text' },
+                    genre: { type: 'text' },
+                    publishedAt: { type: 'date' },
+                    inStock: { type: 'boolean' },
+                    price: { type: 'float' }
+                }
+            }
+        })
+        console.log(`createIndex:indexName:${indexName}:result:${result}`)
+        return result;
+
+    }
+
+    async index(indexName: string, data: any) {
+        return this.esService.index({
+            index: indexName,
+            document: data
+        })
+    }
+
+    async indexWithId(indexName: string, data: any) {
+        const { id, ...rest } = data;
+        return this.esService.index({
+            index: indexName,
+            document: rest,
+            id
+        })
+    }
+
+    async getDetailsById(indexName: string, id: string) {
+        return this.esService.get({
+            id,
+            index: indexName
+        })
+    }
+
+    async bulkInsert<T>(indexName: string, data: T[]) {
+        const bulk = data.flatMap(doc => [
+            { index: { _index: indexName } },
+            doc
+        ])
+        return this.esService.bulk({
+            operations: bulk,
+            refresh: true
+        })
+    }
+
+    async getAllDocuments(indexName: string, from: number, size: number, sort?: any[]) {
+        return this.esService.search({
+            index: indexName,
+            from,
+            size,
+            sort: sort?.length ? sort : undefined
         })
     }
 }
