@@ -8,7 +8,7 @@ import { CustomElasticsearchService } from './elasticsearch.service';
             node: process.env.ELASTICSEARCH_NODE,
         }),
     ],
-    exports: [ElasticsearchModule],
+    exports: [ElasticsearchModule, CustomElasticsearchService],
     providers: [CustomElasticsearchService]
 })
 export class ElasticsearchConfigModule { }

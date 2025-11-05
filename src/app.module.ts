@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ElasticsearchConfigModule } from './elasticsearch/elasticsearch.module';
 import { SearchModule } from './search/search.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { SearchModule } from './search/search.module';
       envFilePath: '.env',
     }),
     ElasticsearchConfigModule,
-    SearchModule
+    SearchModule,
+    ProductsModule
   ],
   controllers: [AppController],
   providers: [AppService],
