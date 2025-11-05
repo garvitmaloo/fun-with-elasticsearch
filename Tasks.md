@@ -23,146 +23,186 @@
 }
 ```
 
-### **1. Range Query (Numeric & Date Fields)**
+### **1. Range Query — Filter by Price & Creation Date**
 
-**Goal:** Get all products within a specific price range and recently created.
+**Goal:** Practice numeric and date-based range queries.
+**Task:**
+Fetch all products that:
+
+* Have a `price` between **100 and 300**
+* Were `createdAt` **on or after 2024-02-01**
+* Sort results by `price` ascending
+
+**Expected matches:**
+Products like *Fitness Tracker Smart Watch*, *Wireless Charging Pad*, *Stainless Steel Water Bottle*, etc.
+
+👉 *Concepts:* `range`, sorting on numeric/date fields.
+
+---
+
+### **2. Exists Query — Find Documents with Missing Fields**
+
+**Goal:** Identify incomplete or draft data.
+**Task:**
+Find all documents that:
+
+* **Do not have** the field `description`
+* OR **do not have** `discount`
+
+**Expected matches:**
+
+* `Item Without Description`
+* `Product Missing Fields`
+
+👉 *Concepts:* `exists`, `must_not`, handling missing/nullable fields.
+
+---
+
+### **3. Term(s) Query — Exact Keyword Filtering**
+
+**Goal:** Match exact categorical values.
+**Task:**
+Find all products that:
+
+* Have `category` = `"Sports"`
+* AND `brand` is either `"RunFast"`, `"FitGear"`, or `"BallPro"`
+
+**Expected matches:**
+
+* `Professional Running Shoes`, `Dumbbell Set Adjustable`, `Basketball Official Size`
+
+👉 *Concepts:* `term`, `terms` (exact match on keyword fields).
+
+---
+
+### **4. Multi-Match Query — Search Across Multiple Text Fields**
+
+**Goal:** Perform full-text search with field weighting.
+**Task:**
+Search for `"wireless"` across `title`, `description`, and `content`.
+
+* Give higher weight (`^2`) to `title`.
+* Only include documents where `isActive = true`.
+
+**Expected matches:**
+
+* `Bluetooth Headphones`, `Wireless Ergonomic Mouse`, `Wireless Charging Pad`, `Smartphone X Pro Max`
+
+👉 *Concepts:* `multi_match`, boosting (`^`), combining full-text search with boolean filters.
+
+---
+
+### **5. Bool Query — Complex Filtering**
+
+**Goal:** Combine must, should, and must_not logic.
+**Task:**
+Find all **featured** products that:
+
+* **Must** belong to category `"Electronics"`
+* **Should** have a `rating >= 4.8` OR `discount >= 10`
+* **Must_not** have `status = "draft"`
+* **Filter** to only products priced below `1000`
+
+**Expected matches:**
+
+* `Smartphone X Pro Max`, `Gaming Monitor 4K`, `Bluetooth Headphones`, `Action Camera 4K`
+
+👉 *Concepts:* `bool` queries with `must`, `should`, `must_not`, and `filter` clauses.
+
+---
+
+### **6. Fuzzy Query — Handling Misspellings**
+
+**Goal:** Make search tolerant to typos.
+**Task:**
+Search for the term `"iphine"` (misspelling of “iPhone”) in the `title` field using a fuzzy query.
+You should still match:
+
+* `Smartphone X Pro Max`
+
+👉 *Concepts:* `fuzzy` query, `fuzziness: AUTO`, typo-tolerant search.
+
+---
+
+### **7. Wildcard Query — Partial Keyword Matching**
+
+**Goal:** Perform flexible pattern matching on keyword fields.
 **Task:**
 Find all products where:
 
-* `price` is between **500 and 1500**
-* `createdAt` is **within the last 30 days**
-* Sort by `price` ascending
+* `sku` starts with `"PHN-"`
+* OR `brand` contains `"Pro"` anywhere (e.g., `AudioPro`, `TechBrand`, `ChefPro`)
 
-👉 *Learned concepts:* `range`, sorting on numeric/date fields.
+**Expected matches:**
+
+* `Smartphone X Pro Max`, `Bluetooth Headphones`, `Premium Laptop Pro 15`, `Stand Mixer Kitchen`
+
+👉 *Concepts:* `wildcard` queries, keyword field matching, pattern-based search.
 
 ---
 
-### **2. Exists Query (Check for Missing Fields)**
+### **8. Match Phrase Query — Exact Ordered Phrase**
 
-**Goal:** Find products missing optional metadata.
+**Goal:** Ensure precise phrase-level matching.
 **Task:**
-Retrieve all documents that:
+Search for documents whose `description` contains the **exact phrase** `"noise cancelling headphones"`.
+Compare with `match` query to see looser results.
 
-* **Do not have** the field `discount` (i.e., discount info missing)
-* OR have a `null`/missing `brand` field
+**Expected match:**
 
-👉 *Learned concepts:* `exists` + negation via `must_not`.
+* `Bluetooth Headphones`
+
+👉 *Concepts:* `match_phrase` vs `match`, positional matching in analyzed fields.
 
 ---
 
-### **3. Term(s) Query (Exact Match Filtering)**
+### **9. Sorting + Pagination — Paginate Sorted Results**
 
-**Goal:** Filter by keyword fields.
+**Goal:** Implement result pagination like a real search API.
 **Task:**
-Fetch all products where:
+Retrieve all `Electronics` products sorted by:
 
-* `category` is exactly `"electronics"`
-* `brand` is any of `"Samsung"`, `"Apple"`, or `"Sony"`
-* `status` equals `"ACTIVE"`
+* `rating` (descending)
+* Then by `price` (ascending)
+  Return **page 2**, **5 results per page** (i.e., `from: 5`, `size: 5`).
 
-👉 *Learned concepts:* `term`, `terms`, exact matching behavior of keyword fields.
+**Expected results (approximate):**
+Second page of electronics sorted by best rating and lowest price.
+
+👉 *Concepts:* Pagination using `from` & `size`, multi-level sorting.
 
 ---
 
-### **4. Full-Text Search with Multi-Match**
+### **10. Combined Complex Query — Realistic Product Search**
 
-**Goal:** Search across multiple text fields.
+**Goal:** Build a full e-commerce search query.
 **Task:**
-Search for the phrase **"wireless earbuds"** in both `title`, `description`, and `content`, giving **higher weight to title**.
-Also, only include results where `isActive = true`.
+Find all **in-stock**, **active** electronics products that:
 
-👉 *Learned concepts:* `multi_match`, field boosting, text relevance scoring, combining with filters.
+* Match `"gaming laptop"` in `title` or `description`
+* Have `price` between **100 and 1500**
+* Have `rating >= 4.5`
+* Prefer products where `brand` is `"TechBrand"` or `"MonitorTech"` (use `should` for scoring)
+* Sort by `views` (desc), then `rating` (desc)
+* Limit to 10 results
 
----
+**Expected matches:**
 
-### **5. Bool Query (Combining Must, Should, Must_Not, Filter)**
+* `Premium Laptop Pro 15`, `Gaming Monitor 4K`, possibly `Bluetooth Headphones` (if keywords overlap)
 
-**Goal:** Build a complex filtered query.
-**Task:**
-Get all **featured** products that:
-
-* **Must** belong to `category = "home-appliances"`
-* **Should** have `rating > 4.5` OR `discount >= 20`
-* **Must_not** have `status = "DISCONTINUED"`
-* **Filter** by `price < 5000` (not affecting score)
-
-👉 *Learned concepts:* Combining multiple clauses with `bool`.
+👉 *Concepts:* Combining `multi_match`, `range`, `bool`, `should`, sorting, and scoring in one query.
 
 ---
 
-### **6. Fuzzy Query (Typos & Misspellings)**
+## ⚙️ Bonus Practice Ideas
 
-**Goal:** Handle user typos.
-**Task:**
-Search for `"iphine"` (typo for “iPhone”) in the `title` field using a fuzzy match so results like “iPhone 14 Pro” still appear.
+Once you’re comfortable with the above:
 
-👉 *Learned concepts:* `fuzzy`, `fuzziness` parameter, typo-tolerant search.
-
----
-
-### **7. Wildcard Query (Pattern-Based Keyword Search)**
-
-**Goal:** Partial keyword pattern matching.
-**Task:**
-Find all products where:
-
-* The `sku` starts with `"ELEC-"`
-* The `brand` contains `"son"` (e.g., “Sony”, “Emerson”)
-
-👉 *Learned concepts:* `wildcard` queries, `keyword` pattern syntax, performance implications.
+* Add **aggregations** (avg price per category, top brands).
+* Compare **match vs term** queries on the same field (`brand`).
+* Filter vs query context experiment: check how `_score` changes.
 
 ---
 
-### **8. Match Phrase Query (Ordered Word Match)**
-
-**Goal:** Retrieve exact phrase matches.
-**Task:**
-Search for products whose `description` contains the **exact phrase** `"noise cancelling headphones"`, maintaining word order.
-Bonus: Compare results to a `match` query to see differences in scoring.
-
-👉 *Learned concepts:* `match_phrase`, phrase-level precision.
-
----
-
-### **9. Sorting + Pagination**
-
-**Goal:** Implement frontend-friendly search result pagination.
-**Task:**
-Search all active products in `category = "laptops"`,
-
-* Sort primarily by `rating` (desc), then by `price` (asc).
-* Return page 3 with 10 items per page.
-
-👉 *Learned concepts:* `from`, `size`, multi-level `sort`.
-
----
-
-### **10. Combined Query — Realistic Product Search**
-
-**Goal:** Simulate a real-world search flow.
-**Task:**
-Find all **in-stock**, **active** products that:
-
-* Match the text `"gaming laptop"` in `title` or `description`
-* Have `price` between **₹60,000–₹120,000**
-* Have `rating >= 4`
-* Prefer results from `brand = "Asus"` or `brand = "MSI"` (higher score if matches)
-* Sort by `views` (desc), `rating` (desc)
-* Return top 20 results
-
-👉 *Learned concepts:* Complex `bool` query mixing `multi_match`, `range`, `should` scoring boost, filters, and sorting.
-
----
-
-## ⚙️ Bonus Challenges
-
-Once you finish the above:
-
-* Add **aggregations** for average price or category counts (next step after queries).
-* Experiment with **query vs filter** context and how it affects `_score`.
-* Compare `match` vs `term` on analyzed vs keyword fields.
-
----
-
-Would you like me to provide **Elasticsearch JSON query examples** for each of these 10 tasks (ready to paste into Kibana or Postman)?
-That would help you run and test them directly.
+Would you like me to now provide the **exact Elasticsearch JSON queries** (ready to paste into Kibana or Postman) for each of these 10 tasks — with the actual field names and realistic values based on this dataset?
+That way you can execute them one by one and directly see the results.
